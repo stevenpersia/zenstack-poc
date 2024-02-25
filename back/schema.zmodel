@@ -1,0 +1,58 @@
+datasource db {
+    provider="sqlite" // provider="mongodb"
+    url="file:./dev.db" // url="MONGODB_URL"
+}
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+plugin openapi {
+    provider = '@zenstackhq/openapi'
+    output = './openapi.json'
+    title = 'My awesome API'
+    version = '0.5.0'
+    summary = 'Created with ZenStack'
+    description = 'My awesome API created with ZenStack'
+    prefix = '/api/model'
+}
+
+model User {
+    id Int @id() @default(autoincrement())
+    email String @unique()
+    name String
+    posts Post[]
+
+    // Full access
+    @@allow('all', true)
+
+    // make user profile public
+    // @@allow('read', true)
+}
+
+model Post {
+    id Int @id() @default(autoincrement())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt()
+    title String @length(min: 8, max: 32)
+    content String?
+    published Boolean @default(false)
+    viewCount Int @default(0)
+    author User? @relation(fields: [authorId], references: [id])
+    authorId Int?
+    // tags Tag[]
+
+    // author has full access
+    // @@allow('all', auth() == author)
+
+    // Full access
+    @@allow('all', true)
+
+    // logged-in users can view published posts
+    // @@allow('read', auth() != null && published)
+}
+
+// type Tag {
+//     name  String
+//     color String
+// }
